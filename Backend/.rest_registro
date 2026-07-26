@@ -1,0 +1,11 @@
+POST http://localhost:8000/api/users/register HTTP/1.1
+content-type: application/json
+
+{
+    "name": "Carlos Andres",
+    "second_name": "Bonilla",
+    "id": "80027041",
+    "email": "venodactilo@gmail.com",
+    "password": "Boni3004",
+    "confirmPassword": "Boni3004"
+}

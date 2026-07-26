@@ -1,0 +1,97 @@
+/* IMAGEN PRINCIPAL */
+.indexcarrusel-image {
+  width: auto;
+  height: 300px;
+  object-fit: cover;
+  border-radius: 40px;
+  display: block;
+  cursor: pointer;
+}
+/* CONTENEDOR PRINCIPAL */
+.image-container {
+  position: relative;
+  width: 580px;
+  height: 300px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  padding: 4.5px;
+}
+/* CONTENEDOR GENERAL */
+.layout {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+/* MINIATURAS LATERALES */
+.side {
+  width: 140px;
+  height: 90px;
+  object-fit: cover;
+  cursor: default;
+  opacity: 0.5;
+  border-radius: 20px;
+  transition: 0.3s ease;
+}
+.side:hover {
+  opacity: 1;
+  transform: scale(1.05);
+}
+/* BOTONES */
+.btn {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 45px;
+  height: 45px;
+  border: none;
+  border-radius: 50%;
+  background: rgba(0, 0, 0, 0.5);
+  color: white;
+  font-size: 20px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 10;
+  transition: 0.3s ease;
+}
+.btn:hover {
+  background: rgba(0, 0, 0, 0.8);
+}
+.prev {
+  left: 10px;
+}
+.next {
+  right: 10px;
+}
+/* TEXTO SUPERIOR */
+.texto-linea {
+  display: flex;
+  align-items: center; /* alinea vertical */
+  justify-content: center; /* centra horizontalmente */
+  gap: 30px; /* espacio entre título y texto */
+}
+.texto-linea h2 {
+  margin: 0;
+  font-size: 22px; 
+}
+/* DOTS */
+.dots {
+  margin-top: 10px;
+}
+.dot {
+  display: inline-block;
+  width: 10px;
+  height: 10px;
+  margin: 5px;
+  background: gray;
+  border-radius: 50%;
+  cursor: pointer;
+  transition: 0.3s ease;
+}
+.dot.active {
+  background: rgb(19, 247, 140);
+  transform: scale(1.2);
+}

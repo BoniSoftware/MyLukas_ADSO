@@ -1,0 +1,40 @@
+require("dotenv").config();
+
+const express = require("express");
+const mongoose = require("mongoose");
+const cors = require("cors");
+const app = express();
+
+//Middleware
+app.use(cors());
+app.use(express.json());
+app.use((req, res, next) => {
+    console.log ("✅", req.method, req.url);
+    next (); 
+});
+
+// RUTAS
+const userRoutes  = require("./routes/userRoutes");
+app.use("/api/users", userRoutes);
+const entradasRoutes = require("./routes/entradasRoutes");
+app.use("/api/entradas", entradasRoutes);
+const salidasRoutes = require("./routes/salidasRoutes");
+app.use("/api/salidas", salidasRoutes);
+
+// MONGODB
+mongoose
+.connect(process.env.MONGO_URI)
+.then(() => console.log('✅ Conectado a MongoDB'))
+.catch((error) => console.error(error));
+
+// SERVIDOR - Habilitar puerto
+const puerto =8000;
+app.listen(puerto,() => console.log('🚀 Servidor corriendo en puerto',puerto));
+
+
+
+
+
+
+
+

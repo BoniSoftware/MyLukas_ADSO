@@ -1,0 +1,39 @@
+.navbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    height: 40%;
+    background-color: rgb(19, 247, 140); 
+    border-bottom: 1px solid rgb(205, 205, 205);
+    padding-left: 2%;
+    padding-right: 2%;
+    border-radius: 30px;
+}  
+.nav {
+    display: flex;
+    gap: 5px;
+}
+.btn-outline {
+    padding: 8px 18px;
+    color: #000000;
+    background-color: #ccc;
+    border: 1.5px solid #000000;
+    cursor: grab;
+    transition: all 0.3s ease; 
+    border-radius: 40px;
+}
+.active {
+  background-color: rgb(19, 247, 140);
+  color: #000000;
+  border: 2px solid rgb(19, 247, 140);
+  cursor: default;
+}
+.Usuario {
+  width: 45px;
+  height: 45px;
+  border-radius: 40px;
+}
+.brand  {
+    font-size: 18px;
+    font-weight: 600;
+}

@@ -1,0 +1,9 @@
+
+POST http://localhost:8000/api/entradas HTTP/1.1
+content-type: application/json
+
+{
+    "entrada": "Salario",
+    "descripcion": "Mensual",
+    "valor": 3000000
+}
