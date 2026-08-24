@@ -15,6 +15,7 @@ function Salidas() {
     salida: "",
     descripcion: "",
     valor: "",
+    fecha: "",
   });
 
   const [editando, setEditando] = useState(false);
@@ -37,9 +38,22 @@ function Salidas() {
 
   // ENVIAR FORMULARIO
   const handleSubmit = async (e) => {e.preventDefault();
+
+  // VALIDAR EL CAMPO VALOR
+    const valor = Number(form.valor);
+      if (
+        form.valor === "" ||
+        !Number.isFinite(valor) ||
+        valor <= 0
+      ) {
+        alert("El valor debe ser un número positivo mayor que cero.");
+        return;
+      }
+    
     try {
       let res;
-      const datosEnviar = {...form, valor: Number(form.valor)};
+      // DATOS QUE SE ENVIARÁN AL BACKEND
+      const datosEnviar = {...form, valor: Number(form.valor), fecha: form.fecha || new Date().toISOString(),};
 
       // ACTUALIZAR
       if (editando) {res = await fetch(`http://localhost:8000/api/salidas/${salidaId}`,
@@ -67,6 +81,7 @@ function Salidas() {
           salida: "",
           descripcion: "",
           valor: "",
+          fecha: "",
         });
 
         setEditando(false);
@@ -106,6 +121,7 @@ function Salidas() {
       salida: salida.salida,
       descripcion: salida.descripcion,
       valor: salida.valor,
+      fecha: salida.fecha || "",
     });
 
     setSalidaId(salida._id);
@@ -120,6 +136,17 @@ function Salidas() {
   const totalSalidas = salidas.reduce((acc, item) => {
     return acc + Number(item.valor);
   }, 0);
+
+// AGRUPAR ENTRADAS POR FECHA
+  const salidasPorFecha = salidas.reduce((grupos, salida) => {
+    const fecha = salida.fecha
+      ? new Date(salida.fecha).toLocaleDateString("es-CO")
+      : "Sin fecha";
+
+    if (!grupos[fecha]) {grupos[fecha] = [];}
+    grupos[fecha].push(salida);
+    return grupos;
+  }, {});
 
   return (
     <div className="containerSalidas">
@@ -154,7 +181,9 @@ function Salidas() {
             name="valor"
             value={form.valor}
             onChange={handleChange}
-            placeholder="Ingrese solo números"
+            placeholder="Ingrese valores positivos"
+            min="0.01"
+            step="1"
           />
 
           {/* BOTON */}
@@ -169,22 +198,37 @@ function Salidas() {
       </div>
 
       {/* LISTADO DE SALIDAS */}
-      <div className="entradas-container">
-        <h3>Salidas Registradas: $ {totalSalidas}</h3>
-        {salidas.map((salida) => (
-          <div
-              key={salida._id}
-              className="card-salidas"
-            ><div>{salida.salida} : {salida.descripcion} : {salida.valor}</div>
-            <button className="btn-editar"
-                onClick={() => editarSalidas(salida)}
-                >Editar</button>
-            <button className="btn-eliminar"
-                onClick={() => eliminarSalidas(salida._id)}
-                >Eliminar</button>
+      <div className="salidas-container">
+        <h3>Salidas Registradas: $ {totalSalidas.toLocaleString("es-CO")}</h3>
+        {Object.entries(salidasPorFecha).map(([fecha, salidasFecha]) => (
+          <div key={fecha} className="grupo-fecha">
+            
+            {/* TITULO DE LA FECHA */}
+            <h4 className="titulo-fecha">
+              📅 Fecha: {fecha}
+            </h4>
+
+            {/* SALIDAS DE ESA FECHA */}
+            {salidasFecha.map((salida) => (
+              <div key={salida._id} className="card-salidas">
+                <div>
+                  <strong>{salida.salida}</strong>{" - "}
+                  {salida.descripcion}{" - "}
+                  $ {Number(salida.valor).toLocaleString("es-CO")}
+                </div>
+                <button
+                  className="btn-editar"
+                  onClick={() => editarSalidas(salida)}
+                  >Editar</button>
+                <button
+                  className="btn-eliminar"
+                  onClick={() => eliminarSalidas(salida._id)}
+                  >Eliminar</button>
+              </div>
+            ))}
           </div>
         ))}
-      </div>  
+      </div> 
     </div>
   );
 }

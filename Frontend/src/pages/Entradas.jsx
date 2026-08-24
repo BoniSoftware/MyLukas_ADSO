@@ -15,6 +15,7 @@ function Entradas() {
     entrada: "",
     descripcion: "",
     valor: "",
+    fecha: "",
   });
 
   const [editando, setEditando] = useState(false);
@@ -37,9 +38,23 @@ function Entradas() {
 
   // ENVIAR FORMULARIO
   const handleSubmit = async (e) => {e.preventDefault();
+
+  // VALIDAR EL CAMPO VALOR
+    const valor = Number(form.valor);
+      if (
+        form.valor === "" ||
+        !Number.isFinite(valor) ||
+        valor <= 0
+      ) {
+        alert("El valor debe ser un número positivo mayor que cero.");
+        return;
+      }
+
     try {
       let res;
-      const datosEnviar = {...form, valor: Number(form.valor)};
+
+      // DATOS QUE SE ENVIARÁN AL BACKEND
+      const datosEnviar = {...form, valor: Number(form.valor), fecha: form.fecha || new Date().toISOString(),};
 
       // ACTUALIZAR
       if (editando) {res = await fetch(`http://localhost:8000/api/entradas/${entradaId}`,
@@ -67,7 +82,8 @@ function Entradas() {
           entrada: "",
           descripcion: "",
           valor: "",
-        });
+          fecha: "",
+          });
 
         setEditando(false);
         setEntradaId(null);
@@ -106,6 +122,7 @@ function Entradas() {
       entrada: entrada.entrada,
       descripcion: entrada.descripcion,
       valor: entrada.valor,
+      fecha: entrada.fecha || "",
     });
 
     setEntradaId(entrada._id);
@@ -116,10 +133,21 @@ function Entradas() {
     });
   };
 
- // SUMATORIA DE ENTRADAS
+  // SUMATORIA DE ENTRADAS
   const totalEntradas = entradas.reduce((acc, item) => {
     return acc + Number(item.valor);
   }, 0);
+
+  // AGRUPAR ENTRADAS POR FECHA
+  const entradasPorFecha = entradas.reduce((grupos, entrada) => {
+    const fecha = entrada.fecha
+      ? new Date(entrada.fecha).toLocaleDateString("es-CO")
+      : "Sin fecha";
+
+    if (!grupos[fecha]) {grupos[fecha] = [];}
+    grupos[fecha].push(entrada);
+    return grupos;
+  }, {});
 
   return (
     <div className="containerEntradas">
@@ -154,7 +182,9 @@ function Entradas() {
             name="valor"
             value={form.valor}
             onChange={handleChange}
-            placeholder="Ingrese solo números"
+            placeholder="Ingrese valores positivos"
+            min="0.01"
+            step="1"
           />
 
           {/* BOTON */}
@@ -170,21 +200,36 @@ function Entradas() {
 
       {/* LISTADO DE ENTRADAS */}
       <div className="entradas-container">
-        <h3>Entradas Registradas: $ {totalEntradas}</h3>
-        {entradas.map((entrada) => (
-          <div
-              key={entrada._id}
-              className="card-entradas"
-            ><div>{entrada.entrada} : {entrada.descripcion} : {entrada.valor}</div>
-            <button className="btn-editar"
-                onClick={() => editarEntradas(entrada)}
-                >Editar</button>
-            <button className="btn-eliminar"
-                onClick={() => eliminarEntradas(entrada._id)}
-                >Eliminar</button>
+        <h3>Entradas Registradas: $ {totalEntradas.toLocaleString("es-CO")}</h3>
+        {Object.entries(entradasPorFecha).map(([fecha, entradasFecha]) => (
+          <div key={fecha} className="grupo-fecha">
+            
+            {/* TITULO DE LA FECHA */}
+            <h4 className="titulo-fecha">
+              📅 Fecha: {fecha}
+            </h4>
+
+            {/* ENTRADAS DE ESA FECHA */}
+            {entradasFecha.map((entrada) => (
+              <div key={entrada._id} className="card-entradas">
+                <div>
+                  <strong>{entrada.entrada}</strong>{" - "}
+                  {entrada.descripcion}{" - "}
+                  $ {Number(entrada.valor).toLocaleString("es-CO")}
+                </div>
+                <button
+                  className="btn-editar"
+                  onClick={() => editarEntradas(entrada)}
+                  >Editar</button>
+                <button
+                  className="btn-eliminar"
+                  onClick={() => eliminarEntradas(entrada._id)}
+                  >Eliminar</button>
+              </div>
+            ))}
           </div>
         ))}
-      </div>  
+      </div> 
     </div>
   );
 }
