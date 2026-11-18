@@ -12,7 +12,8 @@ function Navbar () {
         "/registro": "MODULO - Registro de Usuario",
         "/entradas": "MODULO - Entradas de Dinero",
         "/salidas": "MODULO - Salidas de Dinero",
-        "/soporte": "MODULO - Soporte de Aplicacion",
+        "/pagos": "MODULO - Pagos Electronicos",
+        "/calendario": "MODULO - Calendario de Alertas",
     }[location.pathname] || "MODULO";
 
     return (
@@ -29,9 +30,9 @@ function Navbar () {
                 >Login
                 </NavLink>
                 <NavLink 
-                    to="/soporte"
+                    to="/index"
                     className={({ isActive }) => isActive ? "btn-outline active" : "btn-outline"}
-                >Soporte
+                >Index
                 </NavLink>
             </div>
             <h3>{titulo}</h3>

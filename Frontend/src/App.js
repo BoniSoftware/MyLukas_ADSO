@@ -8,7 +8,8 @@ import Registro from "./pages/Registro";
 import Index from "./pages/Index";
 import Entradas from "./pages/Entradas";
 import Salidas from "./pages/Salidas";
-import Soporte from "./pages/Soporte";
+import Pagos from "./pages/Pagos";
+import Calendario from "./pages/Calendario";
 
 
 function App() {
@@ -23,7 +24,8 @@ function App() {
             <Route path="/index" element={<Index />} />
             <Route path="/entradas" element={<Entradas />} />
             <Route path="/salidas" element={<Salidas />} />
-            <Route path="/soporte" element={<Soporte />} />
+            <Route path="/pagos" element={<Pagos />} />
+            <Route path="/calendario" element={<Calendario />} />
           </Routes>
         <Footer/>
     </BrowserRouter>
