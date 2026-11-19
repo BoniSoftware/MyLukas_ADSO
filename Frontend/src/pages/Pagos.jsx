@@ -1,36 +1,34 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import logoSalidas from "../assets/Pagos.jpg";
+import logoPagos from "../assets/Pagos.jpg";
 import InputField from "../components/InputField";
 import Button from "../components/Button";
 import "../styles/pagos.css";
 
-function Salidas() {
+function Pagos() {
 
   const navigate = useNavigate();
 
   // ESTADOS
-  const [salidas, setSalidas] = useState([]);
+  const [pagos, setPagos] = useState([]);
   const [form, setForm] = useState({
-    salida: "",
     descripcion: "",
-    valor: "",
-    fecha: "",
+    vinculo: "",
   });
 
   const [editando, setEditando] = useState(false);
-   const [salidaId, setSalidaId] = useState(null);
+   const [pagoId, setPagoId] = useState(null);
 
-  // OBTENER SALIDAS
-  const obtenerSalidas = async () => {
-    try {const res = await fetch("http://localhost:8000/api/salidas");
+  // OBTENER PAGOS
+  const obtenerPagos = async () => {
+    try {const res = await fetch("http://localhost:8000/api/pagos");
       const data = await res.json();
-      setSalidas(data);
+      setPagos(data);
     } catch (error) {console.error(error);}
   };
 
-  // CARGAR SALIDAS
-  useEffect(() => {obtenerSalidas();}, []);
+  // CARGAR PAGOS
+  useEffect(() => {obtenerPagos();}, []);
 
   // ACTUALIZAR INPUTS
   const handleChange = (e) => {setForm({...form, [e.target.name]: e.target.value});
@@ -38,17 +36,6 @@ function Salidas() {
 
   // ENVIAR FORMULARIO
   const handleSubmit = async (e) => {e.preventDefault();
-
-  // VALIDAR EL CAMPO VALOR
-    const valor = Number(form.valor);
-      if (
-        form.valor === "" ||
-        !Number.isFinite(valor) ||
-        valor <= 0
-      ) {
-        alert("El valor debe ser un número positivo mayor que cero.");
-        return;
-      }
     
     try {
       let res;
@@ -56,14 +43,14 @@ function Salidas() {
       const datosEnviar = {...form, valor: Number(form.valor), fecha: form.fecha || new Date().toISOString(),};
 
       // ACTUALIZAR
-      if (editando) {res = await fetch(`http://localhost:8000/api/salidas/${salidaId}`,
+      if (editando) {res = await fetch(`http://localhost:8000/api/pagos/${pagoId}`,
           {method: "PUT", headers: {"Content-Type": "application/json"},
             body: JSON.stringify(datosEnviar)}
         );
       } else {
 
         // REGISTRAR
-        res = await fetch("http://localhost:8000/api/salidas",
+        res = await fetch("http://localhost:8000/api/pagos",
           {method: "POST", headers: {"Content-Type": "application/json"},
             body: JSON.stringify(datosEnviar)}
         );
@@ -72,27 +59,25 @@ function Salidas() {
       const data = await res.json();
       if (res.ok) {alert(data.message ||
           (editando
-            ? "Salida actualizada correctamente"
-            : "Salida registrada correctamente")
+            ? "Pago actualizado correctamente"
+            : "Pago registrado correctamente")
         );
 
         // LIMPIAR FORMULARIO
         setForm({
-          salida: "",
           descripcion: "",
-          valor: "",
-          fecha: "",
+          vinculo: "",
         });
 
         setEditando(false);
-        setSalidaId(null);
+        setPagoId(null);
 
-        // RECARGAR USUARIOS
-        obtenerSalidas();
+        // RECARGAR PAGOS
+        obtenerPagos();
 
         // REDIRECCION
         setTimeout(() => {
-          navigate("/Salidas");
+          navigate("/Pagos");
         }, 1500);
 
       } else {alert(data.error || "Error en el proceso");}
@@ -102,29 +87,27 @@ function Salidas() {
     }
   };
 
-  // ELIMINAR SALIDA
-  const eliminarSalidas = async (id) => {
+  // ELIMINAR PAGO
+  const eliminarPagos = async (id) => {
     const confirmar = window.confirm(
-      "¿Eliminar salida?"
+      "¿Eliminar vinculo de Pago?"
     );
     if (!confirmar) return;
-    try {await fetch(`http://localhost:8000/api/salidas/${id}`,
+    try {await fetch(`http://localhost:8000/api/pagos/${id}`,
         {method: "DELETE"}
       );
-      obtenerSalidas();
+      obtenerPagos();
     } catch (error) {console.error(error);}
   };
 
-  // EDITAR SALIDA
-  const editarSalidas = (salida) => {
+  // EDITAR PAGO
+  const editarPagos = (pago) => {
     setForm({
-      salida: salida.salida,
-      descripcion: salida.descripcion,
-      valor: salida.valor,
-      fecha: salida.fecha || "",
+      descripcion: pago.descripcion,
+      vinculo: pago.vinculo,
     });
 
-    setSalidaId(salida._id);
+    setPagoId(pago._id);
     setEditando(true);
     window.scrollTo({
       top: 0,
@@ -132,56 +115,32 @@ function Salidas() {
     });
   };
 
-  // SUMATORIA DE SALIDAS
-  const totalSalidas = salidas.reduce((acc, item) => {
-    return acc + Number(item.valor);
-  }, 0);
-
-// AGRUPAR ENTRADAS POR FECHA
-  const salidasPorFecha = salidas.reduce((grupos, salida) => {
-    const fecha = salida.fecha
-      ? new Date(salida.fecha).toLocaleDateString("es-CO")
-      : "Sin fecha";
-
-    if (!grupos[fecha]) {grupos[fecha] = [];}
-    grupos[fecha].push(salida);
-    return grupos;
-  }, {});
-
   return (
-    <div className="containerSalidas">
+    <div className="containerPagos">
 
       {/* IMAGEN */}
       <div className="col">
-        <img src={logoSalidas} alt="Logo" className="logoSalidas"/>
+        <img src={logoPagos} alt="Logo" className="logoPagos"/>
       </div>
 
       {/* FORMULARIO */}
       <div className="card">
         <form onSubmit={handleSubmit}>
           <InputField
-            label="Salida :"
-            type="text"
-            name="salida"
-            value={form.salida}
-            onChange={handleChange}
-            placeholder="Ingrese nombre salida"
-          />
-          <InputField
             label="Descripcion :"
             type="text"
             name="descripcion"
             value={form.descripcion}
             onChange={handleChange}
-            placeholder="Descripcion corta"
+            placeholder="Descripcion del pago"
           />
           <InputField
-            label="Valor :"
-            type="number"
-            name="valor"
-            value={form.valor}
+            label="Vinculo :"
+            type="text"
+            name="vinculo"
+            value={form.vinculo}
             onChange={handleChange}
-            placeholder="Ingrese valores positivos"
+            placeholder="Ingrese URL para vinculo de pago"
             min="0.01"
             step="1"
           />
@@ -191,46 +150,28 @@ function Salidas() {
             type="submit"
             text={
               editando
-                ? "Actualizar Salida"
-                : "Registrar Salida"
+                ? "Actualizar Vinculo de Pago"
+                : "Registrar Vinculo de Pago"
             }/>
         </form>
       </div>
 
-      {/* LISTADO DE SALIDAS */}
-      <div className="salidas-container">
-        <h3>Salidas Registradas: $ {totalSalidas.toLocaleString("es-CO")}</h3>
-        {Object.entries(salidasPorFecha).map(([fecha, salidasFecha]) => (
-          <div key={fecha} className="grupo-fecha">
-            
-            {/* TITULO DE LA FECHA */}
-            <h4 className="titulo-fecha">
-              📅 Fecha: {fecha}
-            </h4>
+      {/* LISTADO DE PAGOS */}
+      <div className="pagos-container">
 
-            {/* SALIDAS DE ESA FECHA */}
-            {salidasFecha.map((salida) => (
-              <div key={salida._id} className="card-salidas">
-                <div>
-                  <strong>{salida.salida}</strong>{" - "}
-                  {salida.descripcion}{" - "}
-                  $ {Number(salida.valor).toLocaleString("es-CO")}
-                </div>
-                <button
+   <button
                   className="btn-editar"
-                  onClick={() => editarSalidas(salida)}
+                  onClick={() => editarPagos(pagos)}
                   >Editar</button>
                 <button
                   className="btn-eliminar"
-                  onClick={() => eliminarSalidas(salida._id)}
+                  onClick={() => eliminarPagos(pagos._id)}
                   >Eliminar</button>
               </div>
-            ))}
-          </div>
-        ))}
+
       </div> 
-    </div>
+    
   );
 }
 
-export default Salidas;
+export default Pagos;
