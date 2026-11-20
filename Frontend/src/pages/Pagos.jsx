@@ -1,13 +1,10 @@
 import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
 import logoPagos from "../assets/Pagos.jpg";
 import InputField from "../components/InputField";
 import Button from "../components/Button";
 import "../styles/pagos.css";
 
 function Pagos() {
-
-  const navigate = useNavigate();
 
   // ESTADOS
   const [pagos, setPagos] = useState([]);
@@ -17,149 +14,201 @@ function Pagos() {
   });
 
   const [editando, setEditando] = useState(false);
-   const [pagoId, setPagoId] = useState(null);
+  const [pagoId, setPagoId] = useState(null);
 
-  // OBTENER PAGOS
+  // OBTENER Y ORDENAR LOS VÍNCULOS
   const obtenerPagos = async () => {
     try {const res = await fetch("http://localhost:8000/api/pagos");
+    if (!res.ok) {throw new Error("Error al consultar los pagos");}
+
       const data = await res.json();
-      setPagos(data);
-    } catch (error) {console.error(error);}
+
+      // Orden cronológico de registro
+      const ordenados = [...data].sort(
+        (a, b) =>
+          new Date(a.createdAt || a.fecha) -
+          new Date(b.createdAt || b.fecha)
+      );
+
+      setPagos(ordenados);
+    } catch (error) {
+      console.error("Error:", error);
+    }
   };
 
   // CARGAR PAGOS
   useEffect(() => {obtenerPagos();}, []);
 
-  // ACTUALIZAR INPUTS
-  const handleChange = (e) => {setForm({...form, [e.target.name]: e.target.value});
+  // ACTUALIZAR CAMPOS
+  const handleChange = (e) => {setForm({...form,[e.target.name]: e.target.value,
+    });
   };
 
-  // ENVIAR FORMULARIO
+  // REGISTRAR O ACTUALIZAR
   const handleSubmit = async (e) => {e.preventDefault();
-    
+
+    if (!form.descripcion.trim() || !form.vinculo.trim()) {
+      alert("Complete todos los campos");
+      return;
+    }
     try {
-      let res;
-      // DATOS QUE SE ENVIARÁN AL BACKEND
-      const datosEnviar = {...form, valor: Number(form.valor), fecha: form.fecha || new Date().toISOString(),};
+      const url = editando
+        ? `${"http://localhost:8000/api/pagos"}/${pagoId}`
+        : "http://localhost:8000/api/pagos";
 
-      // ACTUALIZAR
-      if (editando) {res = await fetch(`http://localhost:8000/api/pagos/${pagoId}`,
-          {method: "PUT", headers: {"Content-Type": "application/json"},
-            body: JSON.stringify(datosEnviar)}
-        );
-      } else {
-
-        // REGISTRAR
-        res = await fetch("http://localhost:8000/api/pagos",
-          {method: "POST", headers: {"Content-Type": "application/json"},
-            body: JSON.stringify(datosEnviar)}
-        );
-      }
+      const res = await fetch(url, {
+        method: editando ? "PUT" : "POST",
+        headers: {"Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          descripcion: form.descripcion.trim(),
+          vinculo: form.vinculo.trim(),
+        }),
+      });
 
       const data = await res.json();
-      if (res.ok) {alert(data.message ||
-          (editando
-            ? "Pago actualizado correctamente"
-            : "Pago registrado correctamente")
-        );
 
-        // LIMPIAR FORMULARIO
-        setForm({
-          descripcion: "",
-          vinculo: "",
-        });
+      if (!res.ok) {
+        throw new Error(data.error || "Error al procesar el vínculo");
+      }
+      alert(
+        editando
+          ? "Vínculo actualizado correctamente"
+          : "Vínculo registrado correctamente"
+      );
+      setForm({
+        descripcion: "",
+        vinculo: "",
+      });
 
-        setEditando(false);
-        setPagoId(null);
+      setEditando(false);
+      setPagoId(null);
 
-        // RECARGAR PAGOS
-        obtenerPagos();
-
-        // REDIRECCION
-        setTimeout(() => {
-          navigate("/Pagos");
-        }, 1500);
-
-      } else {alert(data.error || "Error en el proceso");}
+      obtenerPagos();
 
     } catch (error) {
-      console.error(error); alert("Error de conexión con el servidor");
+      console.error(error);
+      alert(error.message || "Error de conexión con el servidor");
     }
   };
 
-  // ELIMINAR PAGO
-  const eliminarPagos = async (id) => {
-    const confirmar = window.confirm(
-      "¿Eliminar vinculo de Pago?"
-    );
-    if (!confirmar) return;
-    try {await fetch(`http://localhost:8000/api/pagos/${id}`,
-        {method: "DELETE"}
-      );
-      obtenerPagos();
-    } catch (error) {console.error(error);}
-  };
-
-  // EDITAR PAGO
+  // EDITAR VÍNCULO
   const editarPagos = (pago) => {
     setForm({
-      descripcion: pago.descripcion,
-      vinculo: pago.vinculo,
+      descripcion: pago.descripcion || "",
+      vinculo: pago.vinculo || "",
     });
-
     setPagoId(pago._id);
     setEditando(true);
     window.scrollTo({
       top: 0,
-      behavior: "smooth"
+      behavior: "smooth",
     });
+  };
+
+  // CANCELAR EDICIÓN
+  const cancelarEdicion = () => {
+    setForm({
+      descripcion: "",
+      vinculo: "",
+    });
+    setEditando(false);
+    setPagoId(null);
+  };
+
+  // ELIMINAR VÍNCULO
+  const eliminarPagos = async (id) => {
+    const confirmar = window.confirm(
+      "¿Está seguro de eliminar este vínculo de pago?"
+    );
+    if (!confirmar) return;
+    try {const res = await fetch(`${"http://localhost:8000/api/pagos"}/${id}`, {method: "DELETE",
+      });
+      if (!res.ok) {throw new Error("No se pudo eliminar el vínculo");
+      }
+      alert("Vínculo eliminado correctamente");
+      obtenerPagos();
+
+    } catch (error) {
+      console.error(error);
+      alert("Error al eliminar el vínculo");
+    }
   };
 
   return (
     <div className="containerPagos">
 
-      {/* IMAGEN */}
+      {/* LOGO */}
       <div className="col">
-        <img src={logoPagos} alt="Logo" className="logoPagos"/>
+        <img src={logoPagos} alt="Pagos" className="logoPagos"/>
       </div>
 
       {/* FORMULARIO */}
       <div className="card">
+        <h2>
+          {editando
+            ? "Actualizar vínculo de pago"
+            : "Registrar vínculo de pago"}
+        </h2>
         <form onSubmit={handleSubmit}>
+
           <InputField
-            label="Descripcion :"
+            label="Descripción:"
             type="text"
             name="descripcion"
             value={form.descripcion}
             onChange={handleChange}
-            placeholder="Descripcion del pago"
+            placeholder="Descripcion del vinculo"
           />
           <InputField
-            label="Vinculo :"
-            type="text"
+            label="Vínculo de pago:"
+            type="url"
             name="vinculo"
             value={form.vinculo}
             onChange={handleChange}
-            placeholder="Ingrese URL para vinculo de pago"
+            placeholder="URL vinculo de pago"
             min="0.01"
             step="1"
           />
 
-          {/* BOTON */}
+        {/* BOTON */}
           <Button
             type="submit"
             text={
               editando
-                ? "Actualizar Vinculo de Pago"
-                : "Registrar Vinculo de Pago"
+                ? "Actualizar vínculo"
+                : "Registrar vínculo"
             }/>
+          {editando && (
+            <button
+              type="button"
+              className="btn-eliminar"
+              onClick={cancelarEdicion}
+            >Cancelar edición</button>
+          )}
         </form>
       </div>
 
-      {/* LISTADO DE PAGOS */}
+      {/* LISTADO */}
       <div className="pagos-container">
+        <h2>Vínculos de pago registrados</h2>
+        {pagos.length === 0 ? (
+          <p>No hay vínculos de pago registrados.</p>
+        ) : (
 
-   <button
+          pagos.map((pago, index) => (
+            <div className="pago-card" key={pago._id}>
+              <h3>{index + 1}. {pago.descripcion}</h3>
+              <a
+                href={pago.vinculo}
+                target="_blank"
+                rel="noopener noreferrer"
+              >{pago.vinculo}</a>
+
+              {/* LISTADO DE PAGOS */}
+              <div className="pagos-container">
+                <p></p>
+                <button
                   className="btn-editar"
                   onClick={() => editarPagos(pagos)}
                   >Editar</button>
@@ -168,9 +217,11 @@ function Pagos() {
                   onClick={() => eliminarPagos(pagos._id)}
                   >Eliminar</button>
               </div>
-
-      </div> 
-    
+            </div>
+          ))
+        )}
+      </div>
+    </div>
   );
 }
 

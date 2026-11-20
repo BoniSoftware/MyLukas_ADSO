@@ -20,6 +20,8 @@ const entradasRoutes = require("./routes/entradasRoutes");
 app.use("/api/entradas", entradasRoutes);
 const salidasRoutes = require("./routes/salidasRoutes");
 app.use("/api/salidas", salidasRoutes);
+const pagosRoutes = require("./routes/pagosRoutes");
+app.use("/api/pagos", pagosRoutes);
 
 // MONGODB
 mongoose
