@@ -135,6 +135,26 @@ function Pagos() {
     }
   };
 
+    // AGRUPAR VINCULOS POR FECHA
+      const pagosPorFecha = pagos.reduce((grupos, pago) => {
+      const fechaRegistro = pago.createdAt || pago.fecha;
+
+      let fecha = "Sin fecha";
+        if (fechaRegistro) {
+          const fechaValida = new Date(fechaRegistro);
+            if (!isNaN(fechaValida.getTime())) {
+              fecha = fechaValida.toLocaleDateString("es-CO", {
+                day: "2-digit",
+                month: "2-digit",
+                year: "numeric"
+              });
+            }
+          }
+          if (!grupos[fecha]) {grupos[fecha] = [];}
+          grupos[fecha].push(pago);
+          return grupos;
+        }, {});
+
   return (
     <div className="containerPagos">
 
@@ -145,11 +165,7 @@ function Pagos() {
 
       {/* FORMULARIO */}
       <div className="card">
-        <h2>
-          {editando
-            ? "Actualizar vínculo de pago"
-            : "Registrar vínculo de pago"}
-        </h2>
+        
         <form onSubmit={handleSubmit}>
 
           <InputField
@@ -179,48 +195,56 @@ function Pagos() {
                 ? "Actualizar vínculo"
                 : "Registrar vínculo"
             }/>
-          {editando && (
-            <button
-              type="button"
-              className="btn-eliminar"
-              onClick={cancelarEdicion}
-            >Cancelar edición</button>
-          )}
+          
         </form>
       </div>
 
-      {/* LISTADO */}
+     {/* LISTADO DE ENTRADAS */}
       <div className="pagos-container">
-        <h2>Vínculos de pago registrados</h2>
-        {pagos.length === 0 ? (
-          <p>No hay vínculos de pago registrados.</p>
-        ) : (
+        <h3>
+          {Object.keys(pagosPorFecha).length === 0
+            ? "No hay Vínculos Registrados"
+            : "Vínculos Registrados"}
+        </h3>
 
-          pagos.map((pago, index) => (
-            <div className="pago-card" key={pago._id}>
-              <h3>{index + 1}. {pago.descripcion}</h3>
-              <a
-                href={pago.vinculo}
-                target="_blank"
-                rel="noopener noreferrer"
-              >{pago.vinculo}</a>
+        {Object.entries(pagosPorFecha).map(([fecha, pagosFecha]) => (
+          <div key={fecha} className="grupo-fecha">
+            
+            {/* TITULO DE LA FECHA */}
+            <h4 className="titulo-fecha">
+              📅 Fecha: {fecha}
+            </h4>
 
-              {/* LISTADO DE PAGOS */}
-              <div className="pagos-container">
-                <p></p>
+            {/* PAGOS DE ESA FECHA */}
+            {pagosFecha.map((pago) => (
+              <div className="card-pagos">
+
+                <div className="info-pago">
+                  <strong>{pago.descripcion} : </strong>
+                  <a
+                    href={pago.vinculo}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >{pago.vinculo}
+                  </a>
+                </div>
                 <button
+                  type="button"
                   className="btn-editar"
-                  onClick={() => editarPagos(pagos)}
-                  >Editar</button>
+                  onClick={() => editarPagos(pago)}
+                >Editar
+                </button>
                 <button
+                  type="button"
                   className="btn-eliminar"
-                  onClick={() => eliminarPagos(pagos._id)}
-                  >Eliminar</button>
+                  onClick={() => eliminarPagos(pago._id)}
+                >Eliminar
+                </button>
               </div>
-            </div>
-          ))
-        )}
-      </div>
+            ))}
+          </div>
+        ))}
+      </div> 
     </div>
   );
 }
